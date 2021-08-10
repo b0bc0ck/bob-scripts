@@ -78,6 +78,17 @@ proc_check_free_arch() {
           fi
     	  if [ "${fasectype}" == "DATED" ]; then
             adateddir=`echo ${aoldestdir} | rev | cut -d "/" -f 1 | rev`
+            acheckdated=`echo ${adateddir} | grep -o "-" | wc -l`
+            if [ "${acheckdated}" != "2" ]; then
+              if [ "${acheckdated}" = "1" ]; then
+                adateddir=`echo "${adateddir}-31"`
+              else
+                proc_out "Dated directory ${adateddir} not recognized as a valid date. Exiting."
+                proc_debug "Dated directory ${adateddir} not recognized as a valid date. Exiting."
+                proc_cleanup
+                exit 1
+              fi
+            fi
             aepochdir=`date --date=${adateddir} +"%s"`
             echo ${aepochdir}:${fasec}:${aoldestdir} >> ${TMP}/bob-space.oldlista
           else
@@ -161,6 +172,17 @@ proc_main() {
 	fi
 	if [ "${isectype}" == "DATED" ]; then
           dateddir=`echo ${oldestdir} | rev | cut -d "/" -f 1 | rev`
+          checkdated=`echo ${dateddir} | grep -o "-" | wc -l`
+          if [ "${checkdated}" != "2" ]; then
+            if [ "${checkdated}" = "1" ]; then
+              adateddir=`echo "${dateddir}-31"`
+            else
+              proc_out "Dated directory ${dateddir} not recognized as a valid date. Exiting."
+              proc_debug "Dated directory ${dateddir} not recognized as a valid date. Exiting."
+              proc_cleanup
+              exit 1
+            fi
+          fi
           epochdir=`date --date=${dateddir} +"%s"`
           echo ${epochdir}:${isec}:${oldestdir} >> ${TMP}/bob-space.oldlist
         else
