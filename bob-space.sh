@@ -81,7 +81,9 @@ proc_check_free_arch() {
             acheckdated=`echo ${adateddir} | grep -o "-" | wc -l`
             if [ "${acheckdated}" != "2" ]; then
               if [ "${acheckdated}" = "1" ]; then
-                adateddir=`echo "${adateddir}-31"`
+                amonth=`echo ${adateddir} | cut -d "-" -f 2`
+                alastday=`date -d "${amonth}/1 + 1 month - 1 day" "+%d"`
+                adateddir=`echo "${adateddir}-${alastday} 23:59:59"`
               else
                 proc_out "Dated directory ${adateddir} not recognized as a valid date. Exiting."
                 proc_debug "Dated directory ${adateddir} not recognized as a valid date. Exiting."
@@ -175,7 +177,9 @@ proc_main() {
           checkdated=`echo ${dateddir} | grep -o "-" | wc -l`
           if [ "${checkdated}" != "2" ]; then
             if [ "${checkdated}" = "1" ]; then
-              adateddir=`echo "${dateddir}-31"`
+              month=`echo ${dateddir} | cut -d "-" -f 2`
+              lastday=`date -d "${month}/1 + 1 month - 1 day" "+%d"`
+              dateddir=`echo "${dateddir}-${lastday} 23:59:59"`
             else
               proc_out "Dated directory ${dateddir} not recognized as a valid date. Exiting."
               proc_debug "Dated directory ${dateddir} not recognized as a valid date. Exiting."
