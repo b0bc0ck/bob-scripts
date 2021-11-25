@@ -91,7 +91,7 @@ proc_check_free_arch() {
                 exit 1
               fi
             fi
-            aepochdir=`date --date=${adateddir} +"%s"`
+            aepochdir=`date --date="${adateddir}" +"%s"`
             echo ${aepochdir}:${fasec}:${aoldestdir} >> ${TMP}/bob-space.oldlista
           else
             aepochdir=`stat -c%Y ${aoldestdir}`
@@ -187,7 +187,7 @@ proc_main() {
               exit 1
             fi
           fi
-          epochdir=`date --date=${dateddir} +"%s"`
+          epochdir=`date --date="${dateddir}" +"%s"`
           echo ${epochdir}:${isec}:${oldestdir} >> ${TMP}/bob-space.oldlist
         else
           epochdir=`stat -c%Y ${oldestdir}`
