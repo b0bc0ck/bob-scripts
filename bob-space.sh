@@ -12,7 +12,7 @@ proc_usage() {
 
 proc_out() {
   echo `date "+%a %b %e %T %Y"` $@
-  echo `date "+%a %b %e %T %Y"` PRIV: \" \" \"$@\" >> $GLLOG
+  echo `date "+%a %b %e %T %Y"` PRIV: \"space\" \"$@\" >> $GLLOG
 }
 
 proc_debug() {
