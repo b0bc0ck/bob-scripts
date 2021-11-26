@@ -83,7 +83,7 @@ proc_check_free_arch() {
               if [ "${acheckdated}" = "1" ]; then
                 amonth=`echo ${adateddir} | cut -d "-" -f 2`
                 alastday=`date -d "${amonth}/1 + 1 month - 1 day" "+%d"`
-                adateddir=`echo "${adateddir}-${alastday} 23:59:59"`
+                adateddir=`echo "${adateddir}-${alastday}"`
               else
                 proc_out "Dated directory ${adateddir} not recognized as a valid date. Exiting."
                 proc_debug "Dated directory ${adateddir} not recognized as a valid date. Exiting."
@@ -91,7 +91,7 @@ proc_check_free_arch() {
                 exit 1
               fi
             fi
-            aepochdir=`date --date="${adateddir}" +"%s"`
+            aepochdir=`date --date="${adateddir} 23:59:59" +"%s"`
             echo ${aepochdir}:${fasec}:${aoldestdir} >> ${TMP}/bob-space.oldlista
           else
             aepochdir=`stat -c%Y ${aoldestdir}`
@@ -179,7 +179,7 @@ proc_main() {
             if [ "${checkdated}" = "1" ]; then
               month=`echo ${dateddir} | cut -d "-" -f 2`
               lastday=`date -d "${month}/1 + 1 month - 1 day" "+%d"`
-              dateddir=`echo "${dateddir}-${lastday} 23:59:59"`
+              dateddir=`echo "${dateddir}-${lastday}"`
             else
               proc_out "Dated directory ${dateddir} not recognized as a valid date. Exiting."
               proc_debug "Dated directory ${dateddir} not recognized as a valid date. Exiting."
@@ -187,7 +187,7 @@ proc_main() {
               exit 1
             fi
           fi
-          epochdir=`date --date="${dateddir}" +"%s"`
+          epochdir=`date --date="${dateddir} 23:59:59" +"%s"`
           echo ${epochdir}:${isec}:${oldestdir} >> ${TMP}/bob-space.oldlist
         else
           epochdir=`stat -c%Y ${oldestdir}`
