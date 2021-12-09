@@ -99,11 +99,11 @@ proc_check_free_arch() {
 	  fi
         done
       done
-      deleteme=`cat ${TMP}/bob-space.oldlistfa | sort -n | head -n1`
-      rm ${TMP}/bob-space.oldlistfa
+      deleteme=`cat ${TMP}/bob-space.oldlista | sort -n | head -n1`
+      rm ${TMP}/bob-space.oldlista
       adsec=`echo ${deleteme} | cut -d ":" -f2`
       adoldest=`echo ${deleteme} | cut -d ":" -f3`
-      proc_debug "Oldest directory found in ${dsec} archive: ${doldest}"
+      proc_debug "Oldest directory found in ${adsec} archive: ${adoldest}"
       if [ "${GO}" == "TRUE" ]; then
         adoldestdir=`echo "${adoldest}" | rev | cut -d "/" -f1 | rev`
 	if [ "${DELFROMARCH}" == "TRUE" ]; then
