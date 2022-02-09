@@ -1,0 +1,6 @@
+clean:
+ - "Pop"
+ - "Jazz"
+keepdir:
+ - "-GROUP"
+ - "-SINGLE-"
