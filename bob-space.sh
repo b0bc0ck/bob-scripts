@@ -165,9 +165,10 @@ proc_main() {
         isectype=`echo ${i} | cut -d ":" -f 4`
         proc_debug "${isec} Processing ${isecdev}:${isecpath}:${isectype}"
         if [ "${isectype}" == "DATED" ]; then
-	  oldestdir=`find ${isecpath} -mindepth 1 -maxdepth 1 -type d ! -type l | sort -n | head -n 1`
+          oldestdir=`find ${isecpath} -mindepth 1 -maxdepth 1 -type d ! -type l | sort -n | head -n 1`
         else
-	  oldestdir=`find ${isecpath} -mindepth 1 -maxdepth 1 -type d ! -type l -printf "%T@ %p\n" | sort -n | head -n 1 | awk '{print $2}'`
+          excludedirs=`find ${isecpath} -mindepth 1 -maxdepth 1 -type l -name "(incomplete)-*" | sed -e "s:(incomplete)-::g" | sed -e "s:^:-not ( -path :g" | sed -e "s:$: -prune ):g" | tr '\n' ' '`
+          oldestdir=`find ${isecpath} -mindepth 1 -maxdepth 1 ${excludedirs} -type d ! -type l -printf "%T@ %p\n" | sort -n | head -n 1 | awk '{print $2}'`
         fi
 	if [ -z "${oldestdir}" ]; then
 		continue
