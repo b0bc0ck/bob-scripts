@@ -24,7 +24,7 @@ for i in ${checkdirs}; do
   directory=`echo "${i}" | cut -d ":" -f 2`
   for empty in `find "${glroot}/site${directory}" -mindepth 1 -type d -empty`; do
     emptydir=`echo ${empty} | sed -e "s:${glroot}/site::g"`
-    testit=`echo ${emptydir} | grep '\/[0-9][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]$\|\/[0-9][0-9][0-9][0-9]-[0-3][0-9]$'`
+    testit=`echo ${emptydir} | grep '\/[0-9][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]$\|\/[0-9][0-9][0-9][0-9]-[0-5][0-9]$'`
     if [ "${testit}" == "" ]; then
       proc_out "${emptydir}"
     fi
