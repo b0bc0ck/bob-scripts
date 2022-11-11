@@ -157,8 +157,16 @@ proc_main() {
 }
 
 proc_age_mode () {
-  proc_out "Trigger by age running..."
-  proc_debug "Trigger by age running..."
+  proc_out "Trigger by age (${tdevtrig} minutes old) running..."
+  proc_debug "Trigger by age (${tdevtrig} minutes old) running..."
+  for i in ${INCOMING}; do
+    isec=`echo ${i} | cut -d ":" -f 1`
+    isecdev=`echo ${i} | cut -d ":" -f 2`
+    isecpath=`echo ${i} | cut -d ":" -f 3`
+    isectype=`echo ${i} | cut -d ":" -f 4`
+    proc_debug "${isec} Processing ${isecdev}:${isecpath}:${isectype}"
+    find ${isecpath} -mindepth 1 -maxdepth 1 -type d ! -type l -mmin +${tdevtrig}
+  done
   proc_cleanup
 }
 
