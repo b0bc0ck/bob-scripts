@@ -156,7 +156,7 @@ proc_main() {
 }
 
 proc_age_mode () {
-  proc_out "Trigger by age (more than ${tdevtrig} minutes old) running..."
+  proc_out "Trigger by age (more than ${tdevtrig} inutes old) running..."
   for i in ${INCOMING}; do
     isec=`echo ${i} | cut -d ":" -f 1`
     isecdev=`echo ${i} | cut -d ":" -f 2`
@@ -166,8 +166,10 @@ proc_age_mode () {
     if [ "${isectype}" == "DATED" ]; then
       proc_debug "Dated dirs should be treated as dated dirs (perhaps another entry in conf for how many days we want to keep in age mode)"
     else
-      excludedirs=`find ${isecpath} -mindepth 1 -maxdepth 1 -type l -name "(incomplete)-*" | sed -e "s:(incomplete)-::g" | sed -e "s:^:-not ( -path :g" | sed -e "s:$: -prune ):g" | tr '\n' ' '`
-      movedirs=`find ${isecpath} -mindepth 1 -maxdepth 1 ${excludedirs} -type d ! -type l -mmin +${tdevtrig}`
+      excludeincdirs=`find ${isecpath} -mindepth 1 -maxdepth 1 -type l -name "(incomplete)-*" | sed -e "s:(incomplete)-::g" | sed -e "s:^:-not ( -path :g" | sed -e "s:$: -prune ):g" | tr '\n' ' '`
+      excludenfodirs=`find ${isecpath} -mindepth 1 -maxdepth 1 -type l -name "(no-nfo)-*" | sed -e "s:(no-nfo)-::g" | sed -e "s:^:-not ( -path :g" | sed -e "s:$: -prune ):g" | tr '\n' ' '`
+      excludeemtdirs=`find ${isecpath} -mindepth 1 -maxdepth 1 -type d -empty | sed -e "s:$: -prune ):g" | tr '\n' ' '`
+      movedirs=`find ${isecpath} -mindepth 1 -maxdepth 1 ${excludeincdirs} ${excludenfodirs} ${excludeemtdirs} -type d ! -type l -mmin +${tdevtrig}`
     fi
     if [ -z "${movedirs}" ]; then
       continue
@@ -230,8 +232,10 @@ proc_free_mode() {
       if [ "${isectype}" == "DATED" ]; then
         oldestdir=`find ${isecpath} -mindepth 1 -maxdepth 1 -type d ! -type l | sort -n | head -n 1`
       else
-        excludedirs=`find ${isecpath} -mindepth 1 -maxdepth 1 -type l -name "(incomplete)-*" | sed -e "s:(incomplete)-::g" | sed -e "s:^:-not ( -path :g" | sed -e "s:$: -prune ):g" | tr '\n' ' '`
-        oldestdir=`find ${isecpath} -mindepth 1 -maxdepth 1 ${excludedirs} -type d ! -type l -printf "%T@ %p\n" | sort -n | head -n 1 | awk '{print $2}'`
+        excludeincdirs=`find ${isecpath} -mindepth 1 -maxdepth 1 -type l -name "(incomplete)-*" | sed -e "s:(incomplete)-::g" | sed -e "s:^:-not ( -path :g" | sed -e "s:$: -prune ):g" | tr '\n' ' '`
+        excludenfodirs=`find ${isecpath} -mindepth 1 -maxdepth 1 -type l -name "(no-nfo)-*" | sed -e "s:(no-nfo)-::g" | sed -e "s:^:-not ( -path :g" | sed -e "s:$: -prune ):g" | tr '\n' ' '`
+        excludeemtdirs=`find ${isecpath} -mindepth 1 -maxdepth 1 -type d -empty | sed -e "s:$: -prune ):g" | tr '\n' ' '`
+        oldestdir=`find ${isecpath} -mindepth 1 -maxdepth 1 ${excludeincdirs} ${excludenfodirs} ${excludeemtdirs} -type d ! -type l -printf "%T@ %p\n" | sort -n | head -n 1 | awk '{print $2}'`
       fi
       if [ -z "${oldestdir}" ]; then
         continue
