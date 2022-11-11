@@ -76,7 +76,7 @@ proc_check_free_arch() {
           if [ -z "${aoldestdir}" ]; then
                   continue
           fi
-    	  if [ "${fasectype}" == "DATED" ]; then
+    	    if [ "${fasectype}" == "DATED" ]; then
             adateddir=`echo ${aoldestdir} | rev | cut -d "/" -f 1 | rev`
             acheckdated=`echo ${adateddir} | grep -o "-" | wc -l`
             if [ "${acheckdated}" != "2" ]; then
@@ -96,7 +96,7 @@ proc_check_free_arch() {
           else
             aepochdir=`stat -c%Y ${aoldestdir}`
             echo ${aepochdir}:${fasec}:${aoldestdir} >> ${TMP}/bob-space.oldlista
-	  fi
+          fi
         done
       done
       deleteme=`cat ${TMP}/bob-space.oldlista | sort -n | head -n1`
@@ -106,11 +106,11 @@ proc_check_free_arch() {
       proc_debug "Oldest directory found in ${adsec} archive: ${adoldest}"
       if [ "${GO}" == "TRUE" ]; then
         adoldestdir=`echo "${adoldest}" | rev | cut -d "/" -f1 | rev`
-	if [ "${DELFROMARCH}" == "TRUE" ]; then
+        if [ "${DELFROMARCH}" == "TRUE" ]; then
           rm -rf ${adoldest} && proc_out "removed ${adoldestdir} from ${adsec} archive"
         else
-  	  proc_out "${adsec} archive requires space! maybe try removing ${adoldestdir}"
-	fi
+          proc_out "${adsec} archive requires space! maybe try removing ${adoldestdir}"
+        fi
       fi
     fi
   adevfree=`df -Pm ${1} | grep "/" | awk '{print $4}'`
@@ -145,94 +145,111 @@ proc_lock() {
 proc_main() {
   for t in ${TRIGGER}; do
     tdev=`echo ${t} | cut -d ":" -f 1`
-    tdevtrig=`echo ${t} | cut -d ":" -f 2`
-    tdevstop=`echo ${t} | cut -d ":" -f 3`
-    proc_check_free ${tdev} ${tdevtrig}
-    count=0
-    while [ "${adevfree}" -lt "${tdevtrig}" ]; do
-      let count=count+1
-      if [ "${SANITY}" == "TRUE" ] && [ "$count" == "2" ]; then 
-        proc_cleanup
-      fi
-      if [ "${count}" == "${MAX_LOOP}" ];then
-        proc_debug "Maximum loop count of ${MAX_LOOP} reached. Exiting."
-        proc_cleanup
-      fi
-      for i in ${INCOMING}; do
-        isec=`echo ${i} | cut -d ":" -f 1`
-        isecdev=`echo ${i} | cut -d ":" -f 2`
-        isecpath=`echo ${i} | cut -d ":" -f 3`
-        isectype=`echo ${i} | cut -d ":" -f 4`
-        proc_debug "${isec} Processing ${isecdev}:${isecpath}:${isectype}"
-        if [ "${isectype}" == "DATED" ]; then
-          oldestdir=`find ${isecpath} -mindepth 1 -maxdepth 1 -type d ! -type l | sort -n | head -n 1`
-        else
-          excludedirs=`find ${isecpath} -mindepth 1 -maxdepth 1 -type l -name "(incomplete)-*" | sed -e "s:(incomplete)-::g" | sed -e "s:^:-not ( -path :g" | sed -e "s:$: -prune ):g" | tr '\n' ' '`
-          oldestdir=`find ${isecpath} -mindepth 1 -maxdepth 1 ${excludedirs} -type d ! -type l -printf "%T@ %p\n" | sort -n | head -n 1 | awk '{print $2}'`
-        fi
-	if [ -z "${oldestdir}" ]; then
-		continue
-	fi
-	if [ "${isectype}" == "DATED" ]; then
-          dateddir=`echo ${oldestdir} | rev | cut -d "/" -f 1 | rev`
-          checkdated=`echo ${dateddir} | grep -o "-" | wc -l`
-          if [ "${checkdated}" != "2" ]; then
-            if [ "${checkdated}" = "1" ]; then
-              month=`echo ${dateddir} | cut -d "-" -f 2`
-              lastday=`date -d "${month}/1 + 1 month - 1 day" "+%d"`
-              dateddir=`echo "${dateddir}-${lastday}"`
-            else
-              proc_out "Dated directory ${dateddir} not recognized as a valid date. Exiting."
-              proc_debug "Dated directory ${dateddir} not recognized as a valid date. Exiting."
-              proc_cleanup
-              exit 1
-            fi
-          fi
-          epochdir=`date --date="${dateddir} 23:59:59" +"%s"`
-          echo ${epochdir}:${isec}:${oldestdir} >> ${TMP}/bob-space.oldlist
-        else
-          epochdir=`stat -c%Y ${oldestdir}`
-          echo ${epochdir}:${isec}:${oldestdir} >> ${TMP}/bob-space.oldlist
-	fi
-      done
-      deleteme=`cat ${TMP}/bob-space.oldlist | sort -n | head -n1`
-      rm ${TMP}/bob-space.oldlist
-      dsec=`echo ${deleteme} | cut -d ":" -f2`
-      doldest=`echo ${deleteme} | cut -d ":" -f3`
-      proc_debug "Oldest directory found in ${dsec}: ${doldest}"
-      isecarch=`grep -Po ${dsec} <<< ${ARCHIVE}`
-      if [ -z "${isecarch}" ]; then
-        proc_debug "${dsec} No archive found, deleting ${doldest}"
-        if [ "${GO}" == "TRUE" ]; then
-          doldestdir=`echo "${doldest}" | rev | cut -d "/" -f1 | rev`
-          rm -rf ${doldest} && proc_out "removed ${doldestdir} from ${dsec}"
-        fi
+    if [ "${tdev}" == "AGE" ]; then
+      tdevtrig=`echo ${t} | cut -d ":" -f 2`
+      proc_age_mode  ${tdevtrig}
+    else
+      tdevtrig=`echo ${t} | cut -d ":" -f 2`
+      tdevstop=`echo ${t} | cut -d ":" -f 3`
+      proc_free_mode ${tdev} ${tdevtrig} ${tdevstop}
+    fi
+  done
+}
+
+proc_age_mode () {
+  proc_out "Trigger by age running..."
+  proc_debug "Trigger by age running..."
+  proc_cleanup
+}
+
+proc_free_mode() {
+  proc_out "Trigger by free space running..."
+  proc_debug "Trigger by free space running..."
+  proc_check_free ${tdev} ${tdevtrig}
+  count=0
+  while [ "${adevfree}" -lt "${tdevtrig}" ]; do
+    let count=count+1
+    if [ "${SANITY}" == "TRUE" ] && [ "$count" == "2" ]; then 
+      proc_cleanup
+    fi
+    if [ "${count}" == "${MAX_LOOP}" ];then
+      proc_debug "Maximum loop count of ${MAX_LOOP} reached. Exiting."
+      proc_cleanup
+    fi
+    for i in ${INCOMING}; do
+      isec=`echo ${i} | cut -d ":" -f 1`
+      isecdev=`echo ${i} | cut -d ":" -f 2`
+      isecpath=`echo ${i} | cut -d ":" -f 3`
+      isectype=`echo ${i} | cut -d ":" -f 4`
+      proc_debug "${isec} Processing ${isecdev}:${isecpath}:${isectype}"
+      if [ "${isectype}" == "DATED" ]; then
+        oldestdir=`find ${isecpath} -mindepth 1 -maxdepth 1 -type d ! -type l | sort -n | head -n 1`
       else
-        proc_debug "${dsec} Archive found, preparing rsync ${doldest}"
-        for a in ${ARCHIVE}; do
-                asec=`echo ${a} | cut -d ":" -f 1`
-                asecpath=`echo ${a} | cut -d ":" -f 2`
-                asectype=`echo ${a} | cut -d ":" -f 3`
-                if [ "${dsec}" == "${asec}" ]; then
-			yearmacro=`echo "${asecpath}" | grep "%YYYY"`
-			if [ ! -z "${yearmacro}" ]; then
-                          replaceyear=`echo ${doldest} | rev | cut -d "/" -f 1 | rev | cut -d "-" -f1`
-			  asecpath=`echo "${asecpath}" | sed -e "s:%YYYY:${replaceyear}:g"`
-			fi
-                        proc_debug "rsync ${RSYNCFLAGS} ${doldest} ${asecpath}"
-                        if [ "${GO}" == "TRUE" ]; then
-                                doldestdir=`echo "${doldest}" | rev | cut -d "/" -f1 | rev`
-                                relsizeh=`du -sh ${doldest} | awk '{print $1}'`
-                                relsizem=`du -sBm ${doldest} | awk '{print $1}' | sed -e "s:M::g"`
-				proc_check_free_arch "${asecpath}" "${relsizem}"
-				proc_debug "${asecpath}" "${relsizem}"
-                                starttime=`date +%s` && rsync ${RSYNCFLAGS} ${doldest} ${asecpath} && rsync ${RSYNCFLAGS} ${doldest} ${asecpath} && endtime=`date +%s` && rm -rf ${doldest} && totaltime=$(( (endtime - starttime) )) && if [ "${totaltime}" = 0 ]; then totaltime="1";fi && speed=$(( (relsizem / totaltime) )) && proc_out "moved ${doldestdir} to ${dsec} archive - ${relsizeh} in ${totaltime}sec at ${speed}MB/s "
-                        fi
-                fi
-        done
+        excludedirs=`find ${isecpath} -mindepth 1 -maxdepth 1 -type l -name "(incomplete)-*" | sed -e "s:(incomplete)-::g" | sed -e "s:^:-not ( -path :g" | sed -e "s:$: -prune ):g" | tr '\n' ' '`
+        oldestdir=`find ${isecpath} -mindepth 1 -maxdepth 1 ${excludedirs} -type d ! -type l -printf "%T@ %p\n" | sort -n | head -n 1 | awk '{print $2}'`
       fi
-      proc_check_free ${tdev} ${tdevtrig}
+      if [ -z "${oldestdir}" ]; then
+        continue
+      fi
+      if [ "${isectype}" == "DATED" ]; then
+        dateddir=`echo ${oldestdir} | rev | cut -d "/" -f 1 | rev`
+        checkdated=`echo ${dateddir} | grep -o "-" | wc -l`
+        if [ "${checkdated}" != "2" ]; then
+          if [ "${checkdated}" = "1" ]; then
+            month=`echo ${dateddir} | cut -d "-" -f 2`
+            lastday=`date -d "${month}/1 + 1 month - 1 day" "+%d"`
+            dateddir=`echo "${dateddir}-${lastday}"`
+          else
+            proc_out "Dated directory ${dateddir} not recognized as a valid date. Exiting."
+            proc_debug "Dated directory ${dateddir} not recognized as a valid date. Exiting."
+            proc_cleanup
+            exit 1
+          fi
+        fi
+        epochdir=`date --date="${dateddir} 23:59:59" +"%s"`
+        echo ${epochdir}:${isec}:${oldestdir} >> ${TMP}/bob-space.oldlist
+      else
+        epochdir=`stat -c%Y ${oldestdir}`
+        echo ${epochdir}:${isec}:${oldestdir} >> ${TMP}/bob-space.oldlist
+      fi
     done
+    deleteme=`cat ${TMP}/bob-space.oldlist | sort -n | head -n1`
+    rm ${TMP}/bob-space.oldlist
+    dsec=`echo ${deleteme} | cut -d ":" -f2`
+    doldest=`echo ${deleteme} | cut -d ":" -f3`
+    proc_debug "Oldest directory found in ${dsec}: ${doldest}"
+    isecarch=`grep -Po ${dsec} <<< ${ARCHIVE}`
+    if [ -z "${isecarch}" ]; then
+      proc_debug "${dsec} No archive found, deleting ${doldest}"
+      if [ "${GO}" == "TRUE" ]; then
+        doldestdir=`echo "${doldest}" | rev | cut -d "/" -f1 | rev`
+        rm -rf ${doldest} && proc_out "removed ${doldestdir} from ${dsec}"
+      fi
+    else
+      proc_debug "${dsec} Archive found, preparing rsync ${doldest}"
+      for a in ${ARCHIVE}; do
+              asec=`echo ${a} | cut -d ":" -f 1`
+              asecpath=`echo ${a} | cut -d ":" -f 2`
+              asectype=`echo ${a} | cut -d ":" -f 3`
+              if [ "${dsec}" == "${asec}" ]; then
+                yearmacro=`echo "${asecpath}" | grep "%YYYY"`
+                if [ ! -z "${yearmacro}" ]; then
+                  replaceyear=`echo ${doldest} | rev | cut -d "/" -f 1 | rev | cut -d "-" -f1`
+                  asecpath=`echo "${asecpath}" | sed -e "s:%YYYY:${replaceyear}:g"`
+                fi
+                proc_debug "rsync ${RSYNCFLAGS} ${doldest} ${asecpath}"
+                if [ "${GO}" == "TRUE" ]; then
+                  doldestdir=`echo "${doldest}" | rev | cut -d "/" -f1 | rev`
+                  relsizeh=`du -sh ${doldest} | awk '{print $1}'`
+                  relsizem=`du -sBm ${doldest} | awk '{print $1}' | sed -e "s:M::g"`
+                  proc_check_free_arch "${asecpath}" "${relsizem}"
+                  proc_debug "${asecpath}" "${relsizem}"
+                  starttime=`date +%s` && rsync ${RSYNCFLAGS} ${doldest} ${asecpath} && rsync ${RSYNCFLAGS} ${doldest} ${asecpath} && endtime=`date +%s` && rm -rf ${doldest} && totaltime=$(( (endtime - starttime) )) && if [ "${totaltime}" = 0 ]; then totaltime="1";fi && speed=$(( (relsizem / totaltime) )) && proc_out "moved ${doldestdir} to ${dsec} archive - ${relsizeh} in ${totaltime}sec at ${speed}MB/s "
+                fi
+              fi
+      done
+    fi
+    proc_check_free ${tdev} ${tdevtrig}
   done
 }
 
