@@ -135,7 +135,6 @@ proc_load_config() {
 proc_lock() {
   if [ -f ${TMP}/bob-space.lock ]; then
     proc_out "Error: ${TMP}/bob-space.lock exists."
-    proc_debug "Error: ${TMP}/bob-space.lock exists."
     exit 1
   else
     touch ${TMP}/bob-space.lock
@@ -158,7 +157,6 @@ proc_main() {
 
 proc_age_mode () {
   proc_out "Trigger by age (more than ${tdevtrig} minutes old) running..."
-  proc_debug "Trigger by age (more than ${tdevtrig} minutes old) running..."
   for i in ${INCOMING}; do
     isec=`echo ${i} | cut -d ":" -f 1`
     isecdev=`echo ${i} | cut -d ":" -f 2`
@@ -174,14 +172,44 @@ proc_age_mode () {
     if [ -z "${movedirs}" ]; then
       continue
     fi
-    echo ${movedirs}
+    for release in ${movedirs}; do
+	    releasename=`echo "${release}" | rev | cut -d "/" -f1 | rev`
+	    isecarch=`grep -Po ${isec} <<< ${ARCHIVE}`
+	    if [ -z "${isecarch}" ]; then
+	      proc_debug "${isec} No archive found, deleting ${release}"
+	      if [ "${GO}" == "TRUE" ]; then
+	        rm -rf ${release} && proc_out "removed ${namerelease} from ${isec}"
+	      fi
+	    else
+	      proc_debug "${isec} Archive found, preparing rsync ${releasename}"
+	      for a in ${ARCHIVE}; do
+	              asec=`echo ${a} | cut -d ":" -f 1`
+	              asecpath=`echo ${a} | cut -d ":" -f 2`
+	              asectype=`echo ${a} | cut -d ":" -f 3`
+	              if [ "${isec}" == "${asec}" ]; then
+	                yearmacro=`echo "${asecpath}" | grep "%YYYY"`
+	                if [ ! -z "${yearmacro}" ]; then
+	                  replaceyear=`echo ${release} | rev | cut -d "/" -f 1 | rev | cut -d "-" -f1`
+	                  asecpath=`echo "${asecpath}" | sed -e "s:%YYYY:${replaceyear}:g"`
+	                fi
+	                proc_debug "rsync ${RSYNCFLAGS} ${release} ${asecpath}"
+	                if [ "${GO}" == "TRUE" ]; then
+	                  relsizeh=`du -sh ${release} | awk '{print $1}'`
+	                  relsizem=`du -sBm ${release} | awk '{print $1}' | sed -e "s:M::g"`
+	                  proc_check_free_arch "${asecpath}" "${relsizem}"
+	                  proc_debug "${asecpath}" "${relsizem}"
+	                  starttime=`date +%s` && rsync ${RSYNCFLAGS} ${release} ${asecpath} && rsync ${RSYNCFLAGS} ${release} ${asecpath} && endtime=`date +%s` && rm -rf ${release} && totaltime=$(( (endtime - starttime) )) && if [ "${totaltime}" = 0 ]; then totaltime="1";fi && speed=$(( (relsizem / totaltime) )) && proc_out "moved ${releasename} to ${isec} archive - ${relsizeh} in ${totaltime}sec at ${speed}MB/s "
+	                fi
+              fi
+      done
+			fi
+    done
   done
   proc_cleanup
 }
 
 proc_free_mode() {
   proc_out "Trigger by free space running..."
-  proc_debug "Trigger by free space running..."
   proc_check_free ${tdev} ${tdevtrig}
   count=0
   while [ "${adevfree}" -lt "${tdevtrig}" ]; do
