@@ -156,7 +156,7 @@ proc_main() {
 }
 
 proc_age_mode () {
-  proc_out "Trigger by age (more than ${tdevtrig} inutes old) running..."
+  proc_debug "Trigger by age (more than ${tdevtrig} inutes old) running..."
   for i in ${INCOMING}; do
     isec=`echo ${i} | cut -d ":" -f 1`
     isecdev=`echo ${i} | cut -d ":" -f 2`
@@ -211,7 +211,7 @@ proc_age_mode () {
 }
 
 proc_free_mode() {
-  proc_out "Trigger by free space running..."
+  proc_debug "Trigger by free space running..."
   proc_check_free ${tdev} ${tdevtrig}
   count=0
   while [ "${adevfree}" -lt "${tdevtrig}" ]; do
