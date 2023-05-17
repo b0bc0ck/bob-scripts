@@ -236,7 +236,7 @@ proc_free_mode() {
       isecpath=`echo ${i} | cut -d ":" -f 3`
       isectype=`echo ${i} | cut -d ":" -f 4`
       proc_debug "${isec} Processing ${isecdev}:${isecpath}:${isectype}"
-      if [ "${isectype}" == "DATED" ] || [ "${fasectype}" == "WEEK" ]; then
+      if [ "${isectype}" == "DATED" ] || [ "${isectype}" == "WEEK" ]; then
         oldestdir=`find ${isecpath} -mindepth 1 -maxdepth 1 -type d ! -type l | sort -n | head -n 1`
       else
         excludeincdirs=`find ${isecpath} -mindepth 1 -maxdepth 1 -type l -name "(incomplete)-*" | sed -e "s:(incomplete)-::g" | sed -e "s:^:-not ( -path :g" | sed -e "s:$: -prune ):g" | tr '\n' ' '`
