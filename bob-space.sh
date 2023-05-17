@@ -68,7 +68,7 @@ proc_check_free_arch() {
           fasectype=`echo ${fa} | cut -d ":" -f 3`
           proc_debug "${fasec} Processing ${fasecdev}:${fasecpath}:${fasectype}"
 
-          if [ "${fasectype}" == "DATED" ]; then
+          if [ "${fasectype}" == "DATED" ] || [ "${fasectype}" == "WEEK" ]; then
             aoldestdir=`find ${fasecpath} -mindepth 1 -maxdepth 1 -type d ! -type l | sort -n | head -n 1`
           else
             aoldestdir=`find ${fasecpath} -mindepth 1 -maxdepth 1 -type d ! -type l -printf "%T@ %p\n" | sort -n | head -n 1 | awk '{print $2}'`
@@ -76,14 +76,21 @@ proc_check_free_arch() {
           if [ -z "${aoldestdir}" ]; then
                   continue
           fi
-    	    if [ "${fasectype}" == "DATED" ]; then
+          if [ "${fasectype}" == "DATED" ] || [ "${fasectype}" == "WEEK" ]; then
             adateddir=`echo ${aoldestdir} | rev | cut -d "/" -f 1 | rev`
             acheckdated=`echo ${adateddir} | grep -o "-" | wc -l`
             if [ "${acheckdated}" != "2" ]; then
               if [ "${acheckdated}" = "1" ]; then
-                amonth=`echo ${adateddir} | cut -d "-" -f 2`
-                alastday=`date -d "${amonth}/1 + 1 month - 1 day" "+%d"`
-                adateddir=`echo "${adateddir}-${alastday}"`
+                if [ "${fasectype}" == "DATED" ]; then
+                  amonth=`echo ${adateddir} | cut -d "-" -f 2`
+                  alastday=`date -d "${amonth}/1 + 1 month - 1 day" "+%d"`
+                  adateddir=`echo "${adateddir}-${alastday}"`
+                fi
+                if [ "${fasectype}" == "WEEK" ]; then
+                  ayear=`echo ${adateddir} | cut -d "-" -f 1`
+                  aweek=`echo ${adateddir} | cut -d "-" -f 2`
+                  adateddir=`date -d "${ayear}-01-01 +$(( ${aweek} * 7 + 1 - $(date -d "${ayear}-01-04" +%u ) - 3 )) days -2 days + 7 days" +"%Y-%m-%d"`
+                fi
               else
                 proc_out "Dated directory ${adateddir} not recognized as a valid date. Exiting."
                 proc_debug "Dated directory ${adateddir} not recognized as a valid date. Exiting."
@@ -229,7 +236,7 @@ proc_free_mode() {
       isecpath=`echo ${i} | cut -d ":" -f 3`
       isectype=`echo ${i} | cut -d ":" -f 4`
       proc_debug "${isec} Processing ${isecdev}:${isecpath}:${isectype}"
-      if [ "${isectype}" == "DATED" ]; then
+      if [ "${isectype}" == "DATED" ] || [ "${fasectype}" == "WEEK" ]; then
         oldestdir=`find ${isecpath} -mindepth 1 -maxdepth 1 -type d ! -type l | sort -n | head -n 1`
       else
         excludeincdirs=`find ${isecpath} -mindepth 1 -maxdepth 1 -type l -name "(incomplete)-*" | sed -e "s:(incomplete)-::g" | sed -e "s:^:-not ( -path :g" | sed -e "s:$: -prune ):g" | tr '\n' ' '`
@@ -240,14 +247,21 @@ proc_free_mode() {
       if [ -z "${oldestdir}" ]; then
         continue
       fi
-      if [ "${isectype}" == "DATED" ]; then
+      if [ "${isectype}" == "DATED" ] || [ "${isectype}" == "WEEK" ]; then
         dateddir=`echo ${oldestdir} | rev | cut -d "/" -f 1 | rev`
         checkdated=`echo ${dateddir} | grep -o "-" | wc -l`
         if [ "${checkdated}" != "2" ]; then
           if [ "${checkdated}" = "1" ]; then
-            month=`echo ${dateddir} | cut -d "-" -f 2`
-            lastday=`date -d "${month}/1 + 1 month - 1 day" "+%d"`
-            dateddir=`echo "${dateddir}-${lastday}"`
+            if [ "${isectype}" == "DATED" ]; then
+              month=`echo ${dateddir} | cut -d "-" -f 2`
+              lastday=`date -d "${month}/1 + 1 month - 1 day" "+%d"`
+              dateddir=`echo "${dateddir}-${lastday}"`
+            fi
+            if [ "${isectype}" == "WEEK" ]; then
+              year=`echo ${dateddir} | cut -d "-" -f 1`
+              week=`echo ${dateddir} | cut -d "-" -f 2`
+              dateddir=`date -d "${year}-01-01 +$(( ${week} * 7 + 1 - $(date -d "${year}-01-04" +%u ) - 3 )) days -2 days + 7 days" +"%Y-%m-%d"`
+            fi
           else
             proc_out "Dated directory ${dateddir} not recognized as a valid date. Exiting."
             proc_debug "Dated directory ${dateddir} not recognized as a valid date. Exiting."
