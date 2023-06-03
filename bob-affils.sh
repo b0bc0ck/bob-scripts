@@ -8,12 +8,12 @@ GLLOG="${GLROOT}/ftp-data/logs/glftpd.log"
 PRECFG="${GLROOT}/etc/pre.cfg"
 
 proc_priv() {
-  echo `date "+%a %b %e %T %Y"` "$@"
+  #echo `date "+%a %b %e %T %Y"` "$@"
   echo `date "+%a %b %e %T %Y"` PRIV: \"affils\" \""$@"\" >> $GLLOG
 }
 
 proc_pub() {
-  echo `date "+%a %b %e %T %Y"` "$@"
+  #echo `date "+%a %b %e %T %Y"` "$@"
   echo `date "+%a %b %e %T %Y"` PUB: \"affils\" \""$@"\" >> $GLLOG
 }
 
