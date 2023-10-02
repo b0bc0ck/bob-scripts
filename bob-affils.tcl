@@ -6,5 +6,10 @@ set bobaffils "/home/ftpd/glftpd/bin/bob-affils.sh"
 
 proc list_affils {nick uhost hand chan arg} {
     global bobaffils
-    exec $bobaffils list &
+
+    set data [exec $bobaffils list]
+
+    foreach line [split $data "\n"] {
+        putserv "PRIVMSG $chan :$line"
+    }
 }

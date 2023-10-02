@@ -93,7 +93,7 @@ proc_foo_list () {
     groups=`echo ${groups} | xargs -n1 | sort -u | xargs`
     if [ ! -z "$groups" ]; then
       msg=`printf "%-${sectionbuf}s: %s\n" "${section}" "${groups}"`
-      proc_pub "${msg}"
+      echo "${msg}"
     fi
   done
 }
