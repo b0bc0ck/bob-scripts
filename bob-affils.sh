@@ -1,9 +1,9 @@
 #!/bin/bash
 # vim: ai ts=2 sw=2 et sts=2 ft=sh
 
-GLROOT="/home/ftpd/glftpd"
+GLROOT="/opt/ftpd/glftpd"
 GROUPPATH="/site/groups"
-GLPRECONF="/home/ftpd/glftpd.pre.conf"
+GLPRECONF="/opt/ftpd/glftpd.pre.conf"
 GLLOG="${GLROOT}/ftp-data/logs/glftpd.log"
 PRECFG="${GLROOT}/etc/pre.cfg"
 
@@ -18,7 +18,7 @@ proc_pub() {
 }
 
 proc_gl_list() {
-  grep "privpath ${GROUPPATH} 1" ${GLPRECONF} | sed -e "s:privpath ${GROUPPATH} 1::g" | sed -e "s:=::g" -e "s:^ ::g"
+  proc_pub `grep "privpath ${GROUPPATH} 1" ${GLPRECONF} | sed -e "s:privpath ${GROUPPATH} 1::g" | sed -e "s:=::g" -e "s:^ ::g"`
 }
 
 proc_gl_add() {
@@ -93,7 +93,7 @@ proc_foo_list () {
     groups=`echo ${groups} | xargs -n1 | sort -u | xargs`
     if [ ! -z "$groups" ]; then
       msg=`printf "%-${sectionbuf}s: %s\n" "${section}" "${groups}"`
-      echo "${msg}"
+      proc_pub "${msg}"
     fi
   done
 }
