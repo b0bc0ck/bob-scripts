@@ -18,7 +18,7 @@ proc_pub() {
 }
 
 proc_gl_list() {
-  proc_pub `grep "privpath ${GROUPPATH} 1" ${GLPRECONF} | sed -e "s:privpath ${GROUPPATH} 1::g" | sed -e "s:=::g" -e "s:^ ::g"`
+  echo `grep "privpath ${GROUPPATH} 1" ${GLPRECONF} | sed -e "s:privpath ${GROUPPATH} 1::g" | sed -e "s:=::g" -e "s:^ ::g"`
 }
 
 proc_gl_add() {
@@ -93,7 +93,7 @@ proc_foo_list () {
     groups=`echo ${groups} | xargs -n1 | sort -u | xargs`
     if [ ! -z "$groups" ]; then
       msg=`printf "%-${sectionbuf}s: %s\n" "${section}" "${groups}"`
-      proc_pub "${msg}"
+      echo "${msg}"
     fi
   done
 }
