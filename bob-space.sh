@@ -176,7 +176,8 @@ proc_age_mode () {
       excludeincdirs=`find ${isecpath} -mindepth 1 -maxdepth 1 -type l -name "(incomplete)-*" | sed -e "s:(incomplete)-::g" | sed -e "s:^:-not ( -path :g" | sed -e "s:$: -prune ):g" | tr '\n' ' '`
       excludenfodirs=`find ${isecpath} -mindepth 1 -maxdepth 1 -type l -name "(no-nfo)-*" | sed -e "s:(no-nfo)-::g" | sed -e "s:^:-not ( -path :g" | sed -e "s:$: -prune ):g" | tr '\n' ' '`
       excludeemtdirs=`find ${isecpath} -mindepth 1 -maxdepth 1 -type d -empty | sed -e "s:^:-not ( -path :g" | sed -e "s:$: -prune ):g" | tr '\n' ' '`
-      movedirs=`find ${isecpath} -mindepth 1 -maxdepth 1 ${excludeincdirs} ${excludenfodirs} ${excludeemtdirs} -type d ! -type l -mmin +${tdevtrig}`
+      excludeignoredirs=`echo ${IGNORE} | sed -e "s: : -prune ) -not ( -name :g" | sed -e "s:^:-not ( -name :g" | sed -e "s:$: -prune ):g"`
+      movedirs=`find ${isecpath} -mindepth 1 -maxdepth 1 ${excludeincdirs} ${excludenfodirs} ${excludeemtdirs} ${excludeignoredirs} -type d ! -type l -mmin +${tdevtrig}`
     fi
     if [ -z "${movedirs}" ]; then
       continue
@@ -242,7 +243,8 @@ proc_free_mode() {
         excludeincdirs=`find ${isecpath} -mindepth 1 -maxdepth 1 -type l -name "(incomplete)-*" | sed -e "s:(incomplete)-::g" | sed -e "s:^:-not ( -path :g" | sed -e "s:$: -prune ):g" | tr '\n' ' '`
         excludenfodirs=`find ${isecpath} -mindepth 1 -maxdepth 1 -type l -name "(no-nfo)-*" | sed -e "s:(no-nfo)-::g" | sed -e "s:^:-not ( -path :g" | sed -e "s:$: -prune ):g" | tr '\n' ' '`
         excludeemtdirs=`find ${isecpath} -mindepth 1 -maxdepth 1 -type d -empty | sed -e "s:^:-not ( -path :g" | sed -e "s:$: -prune ):g" | tr '\n' ' '`
-        oldestdir=`find ${isecpath} -mindepth 1 -maxdepth 1 ${excludeincdirs} ${excludenfodirs} ${excludeemtdirs} -type d ! -type l -printf "%T@ %p\n" | sort -n | head -n 1 | awk '{print $2}'`
+        excludeignoredirs=`echo ${IGNORE} | sed -e "s: : -prune ) -not ( -name :g" | sed -e "s:^:-not ( -name :g" | sed -e "s:$: -prune ):g"`
+        oldestdir=`find ${isecpath} -mindepth 1 -maxdepth 1 ${excludeincdirs} ${excludenfodirs} ${excludeemtdirs} ${excludeignoredirs} -type d ! -type l -printf "%T@ %p\n" | sort -n | head -n 1 | awk '{print $2}'`
       fi
       if [ -z "${oldestdir}" ]; then
         continue
