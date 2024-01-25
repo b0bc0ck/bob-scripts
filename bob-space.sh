@@ -89,7 +89,7 @@ proc_check_free_arch() {
                 if [ "${fasectype}" == "WEEK" ]; then
                   ayear=`echo ${adateddir} | cut -d "-" -f 1`
                   aweek=`echo ${adateddir} | cut -d "-" -f 2`
-                  adateddir=`date -d "${ayear}-01-01 +$(( ${aweek} * 7 + 1 - $(date -d "${ayear}-01-04" +%u ) - 3 )) days -2 days + 7 days" +"%Y-%m-%d"`
+                  adateddir=`date -d "${ayear}0101 ${aweek} week -$(date -d"${ayear}0104" +%u) day +3day" +"%Y-%m-%d"`
                 fi
               else
                 proc_out "Dated directory ${adateddir} not recognized as a valid date. Exiting."
@@ -262,7 +262,7 @@ proc_free_mode() {
             if [ "${isectype}" == "WEEK" ]; then
               year=`echo ${dateddir} | cut -d "-" -f 1`
               week=`echo ${dateddir} | cut -d "-" -f 2`
-              dateddir=`date -d "${year}-01-01 +$(( ${week} * 7 + 1 - $(date -d "${year}-01-04" +%u ) - 3 )) days -2 days + 7 days" +"%Y-%m-%d"`
+              dateddir=`date -d "${year}0101 ${week} week -$(date -d"${year}0104" +%u) day +3day" +"%Y-%m-%d"`
             fi
           else
             proc_out "Dated directory ${dateddir} not recognized as a valid date. Exiting."
