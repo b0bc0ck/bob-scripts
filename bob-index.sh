@@ -19,7 +19,7 @@ if [ "${1}" == "+links" ]; then
                 mkdir -p "/site/_search_links/${USER}"
         fi
         cd "/site/_search_links/${USER}"
-        /bin/scripts/bob-index -G /ftp-data/bob/ -D bob-index.db -M search -l ${USER} -s "${*:2}"
+        /bin/bob-index -G /ftp-data/bob/ -D bob-index.db -M search -l ${USER} -s "${*:2}"
 else
-        /bin/scripts/bob-index -G /ftp-data/bob/ -D bob-index.db -M search -s "$@"
+        /bin/bob-index -G /ftp-data/bob/ -D bob-index.db -M search -s "$@"
 fi
