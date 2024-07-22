@@ -32,22 +32,27 @@ EXT="${1##*.}"
 ###
 
 # file must end in 'mkv'
-if [[ "$EXT" != "mkv" ]]; then
+if [[ "${EXT}" != "mkv" ]]; then
   # echo "Not an MKV file, ignoring"
   exit 0
 fi
 
+if [ -z "${2}" ]; then
+  PATH_FILE="${1}"
+else
+  PATH_FILE="${2}/${1}"
+fi
+
 # remove empty files right away
-if [ ! -s "$2"/"$1" ]; then
-  # echo "File is 0 bytes, deleting..."
-  rm -f "$2"/"$1"
+if [ ! -s "${PATH_FILE}" ]; then
+  rm -f "${PATH_FILE}"
   exit 2
 fi
 
 # mkvinfo needs LC_ALL to be set
 #export LC_ALL=C
 
-EXPECTED=$($PATH_MKVINFO -z "$2"/"$1" | grep '^+' | sed 's/ data.*//g' | awk '{total += $NF} END{print total}')
+EXPECTED=$(${PATH_MKVINFO} -z "${PATH_FILE}" | grep '^+' | sed 's/ data.*//g' | awk '{total += $NF} END{print total}')
 
 # deal with mkv files with broken header information
 if [[ $EXPECTED -lt 10000 ]]; then
@@ -55,14 +60,14 @@ if [[ $EXPECTED -lt 10000 ]]; then
 fi
 
 # stat might not be portable
-# ACTUAL=$(stat -c%s "$2"/"$1")
+# ACTUAL=$(stat -c%s "${PATH_FILE}")
 
-ACTUAL=$(wc -c <"$2"/"$1")
+ACTUAL=$(wc -c <"${PATH_FILE}")
 
 TIMESTAMP=`date +"%a %b %-d %T %Y"`
 
 if [[ $EXPECTED == $ACTUAL ]]; then
-#  echo "$TIMESTAMP MKV_PASS: \"$PWD\" \"$1\" \"$EXPECTED\" \"$ACTUAL\"" >> $PATH_GLFTPD_LOG
+  #echo "$TIMESTAMP MKV_PASS: \"$PWD\" \"$1\" \"$EXPECTED\" \"$ACTUAL\"" >> $PATH_GLFTPD_LOG
   echo -e "Video file is correct (size: $ACTUAL/$EXPECTED)."
   exit 0
 fi
