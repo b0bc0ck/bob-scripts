@@ -45,7 +45,7 @@ fi
 
 # remove empty files right away
 if [ ! -s "${PATH_FILE}" ]; then
-  rm -f "${PATH_FILE}"
+  rm "${PATH_FILE}"
   exit 2
 fi
 
@@ -76,6 +76,7 @@ echo "$TIMESTAMP MKV_FAIL: \"$PWD\" \"$1\" \"$EXPECTED\" \"$ACTUAL\"" >> $PATH_G
 
 if [[ $DELETE_MKV_FAIL == 1 ]] && [[ $EXPECTED -gt 0 ]]; then
   echo -e "Video file is corrupted (expected size: $EXPECTED)."
+  rm "${PATH_FILE}"
   exit 2
 fi
 
