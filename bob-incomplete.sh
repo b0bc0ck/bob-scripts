@@ -1,7 +1,7 @@
 #!/bin/bash
 
 proc_out() {
-  echo `date +"%a %b %d %H:%M:%S %Y"` PUB: \"inc\" \"$@\"  >> /home/ftpd/glftpd/ftp-data/logs/glftpd.log
+  echo `date +"%a %b %d %H:%M:%S %Y"` PUB: \"inc\" \"$@\"  >> /opt/ftpd/glftpd/ftp-data/logs/glftpd.log
 }
 
 
@@ -12,7 +12,7 @@ else
   exit 0
 fi
 
-/home/ftpd/glftpd/bin/incomplete-list.sh | while IFS='' read -r line || [[ -n $line ]]; do
+/opt/ftpd/glftpd/bin/incomplete-list.sh | while IFS='' read -r line || [[ -n $line ]]; do
 
     if [ "${line}" != "No more incompletes found." ]; then
       output=`echo $line | cut -d " " -f2-`

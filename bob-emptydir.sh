@@ -1,7 +1,7 @@
 #!/bin/bash
 # vim: ai ts=2 sw=2 et sts=2 ft=sh
 
-glroot="/home/ftpd/glftpd"
+glroot="/opt/ftpd/glftpd"
 
 checkdirs="MP3:/mp3"
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 # vim: ai ts=2 sw=2 et sts=2 ft=sh
 
-config=/home/ftpd/glftpd/bin/bob-space.conf
+config=/opt/ftpd/glftpd/bin/bob-space.conf
 
 #
 
